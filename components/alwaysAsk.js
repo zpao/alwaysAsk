@@ -92,9 +92,12 @@ Asker.prototype = {
 
   __topics: null,
   get _topics() {
-    // If we're not OSX then we need TOPICS + EXTRA_TOPICS
-    if (!this.__topics)
-      this.__topics = TOPICS;
+    if (!this.__topics) {
+      // If we're not OSX then we need TOPICS + EXTRA_TOPICS
+      let os = Cc["@mozilla.org/xre/app-info;1"].
+               getService(Ci.nsIXULRuntime).OS;
+      this.__topics = (os == "Darwin") ? TOPICS : TOPICS.concat(EXTRA_TOPICS);
+    }
     return this.__topics;
   },
 
