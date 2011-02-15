@@ -1,1 +1,5 @@
 locale alwaysask en-US chrome/locale/en-US/
+
+# Component registration
+component {2b34d88e-c8e5-11de-8979-e7ad77aa63c5} components/alwaysAsk.js
+

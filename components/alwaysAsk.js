@@ -220,9 +220,5 @@ Asker.prototype = {
   }
 }
 
-
-function NSGetModule(aComMgr, aFileSpec) {
-  return XPCOMUtils.generateModule([Asker]);
-}
-
-
+// This only supports Gecko 2 (Firefox 4).
+const NSGetFactory = XPCOMUtils.generateNSGetFactory([Asker]);
