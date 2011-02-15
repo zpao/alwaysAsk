@@ -50,6 +50,7 @@ const Ci = Components.interfaces;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
 
 // Other constants for us
 const TOPICS = ["quit-application-requested",
@@ -63,23 +64,12 @@ function log(aMsg) {
   aMsg = ("Asker: " + aMsg + "\n");
   if (!DEBUG) return;
   dump(aMsg);
-  Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService)
-                                     .logStringMessage(aMsg);
+  Services.console.logStringMessage(aMsg);
 }
 // ********************** DEBUGGING *******************************************
 
 
-function Asker() {
-  XPCOMUtils.defineLazyServiceGetter(this, "_bundleService",
-                                     "@mozilla.org/intl/stringbundle;1",
-                                     "nsIStringBundleService");
-  XPCOMUtils.defineLazyServiceGetter(this, "_observerService",
-                                     "@mozilla.org/observer-service;1",
-                                     "nsIObserverService");
-  XPCOMUtils.defineLazyServiceGetter(this, "_prefs",
-                                     "@mozilla.org/preferences-service;1",
-                                     "nsIPrefBranch");
-}
+function Asker() { }
 
 Asker.prototype = {
   classDescription: "Always Ask",
@@ -94,9 +84,8 @@ Asker.prototype = {
   get _topics() {
     if (!this.__topics) {
       // If we're not OSX then we need TOPICS + EXTRA_TOPICS
-      let os = Cc["@mozilla.org/xre/app-info;1"].
-               getService(Ci.nsIXULRuntime).OS;
-      this.__topics = (os == "Darwin") ? TOPICS : TOPICS.concat(EXTRA_TOPICS);
+      this.__topics =
+        (Services.appinfo.OS == "Darwin") ? TOPICS : TOPICS.concat(EXTRA_TOPICS);
     }
     return this.__topics;
   },
@@ -124,7 +113,7 @@ Asker.prototype = {
     // Add observers
     let _this = this;
     this._topics.forEach(function(aTopic) {
-      _this._observerService.addObserver(_this, aTopic, true);
+      Services.obs.addObserver(_this, aTopic, true);
     });
   },
 
@@ -135,8 +124,7 @@ Asker.prototype = {
     if ((aCancelQuit instanceof Ci.nsISupportsPRBool) && aCancelQuit.data)
       return;
 
-    var wm = Cc["@mozilla.org/appshell/window-mediator;1"].
-             getService(Ci.nsIWindowMediator);
+    var wm = Services.wm;
 
     var windowcount = 0;
     var pagecount = 0;
@@ -163,14 +151,14 @@ Asker.prototype = {
       // browser.warnOnRestart specifically covers app-initiated restarts where we restart the app
       // browser.tabs.warnOnClose is the global "warn when closing multiple tabs" pref
 
-      var sessionWillBeSaved = this._prefs.getIntPref("browser.startup.page") == 3 ||
-                               this._prefs.getBoolPref("browser.sessionstore.resume_session_once");
-      if (sessionWillBeSaved || !this._prefs.getBoolPref("browser.warnOnQuit"))
+      var sessionWillBeSaved = Services.prefs.getIntPref("browser.startup.page") == 3 ||
+                               Services.prefs.getBoolPref("browser.sessionstore.resume_session_once");
+      if (sessionWillBeSaved || !Services.prefs.getBoolPref("browser.warnOnQuit"))
         showPrompt = false;
       else if (aQuitType == "restart")
-        showPrompt = this._prefs.getBoolPref("browser.warnOnRestart");
+        showPrompt = Services.prefs.getBoolPref("browser.warnOnRestart");
       else
-        showPrompt = this._prefs.getBoolPref("browser.tabs.warnOnClose");
+        showPrompt = Services.prefs.getBoolPref("browser.tabs.warnOnClose");
     } catch (ex) {}
 
     // Never show a prompt inside the private browsing mode
@@ -184,9 +172,9 @@ Asker.prototype = {
     }
 
     var quitBundle =
-      this._bundleService.createBundle("chrome://alwaysAsk/locale/quitDialog.properties");
+      Services.strings.createBundle("chrome://alwaysAsk/locale/quitDialog.properties");
     var brandBundle =
-      this._bundleService.createBundle("chrome://branding/locale/brand.properties");
+      Services.strings.createBundle("chrome://branding/locale/brand.properties");
 
     var appName = brandBundle.GetStringFromName("brandShortName");
     var title = quitBundle.formatStringFromName(aQuitType + "DialogTitle",
@@ -198,8 +186,7 @@ Asker.prototype = {
     //XXXzpao Potential feature - include what's happening (is session going to
     //        be restored, etc)
 
-    var promptService = Cc["@mozilla.org/embedcomp/prompt-service;1"].
-                        getService(Ci.nsIPromptService);
+    var promptService = Services.prompt;
 
     var mostRecentBrowserWindow = wm.getMostRecentWindow("navigator:browser");
     var reallyQuit = promptService.confirm(mostRecentBrowserWindow, title, message);
@@ -215,7 +202,7 @@ Asker.prototype = {
     // remove observers
     let _this = this;
     this._topics.forEach(function(aTopic) {
-      _this._observerService.removeObserver(_this, aTopic, true);
+      Services.obs.removeObserver(_this, aTopic, true);
     });
   }
 }
