@@ -5,7 +5,7 @@
     <em:id>alwaysask@zpao.com</em:id>
     <em:name>Always Ask</em:name>
     <em:description>
-      Adds an additional quit dialog that will appear when Firefox would not normall prompt (for example, when you have session restore on). This is meant to capture the accidental ⌘Q keystroke.
+      Adds an additional quit dialog that will appear when Firefox would not normally prompt (for example, when you have session restore on). This is meant to capture the accidental ⌘Q keystroke.
     </em:description>
     <em:version>2.0pre</em:version>
     <em:creator>Paul O’Shannessy</em:creator>
