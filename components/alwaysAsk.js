@@ -78,8 +78,6 @@ Asker.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
                                          Ci.nsISupportsWeakReference]),
 
-  _xpcom_categories: [{category: "app-startup", service: true}],
-
   __topics: null,
   get _topics() {
     if (!this.__topics) {
@@ -95,7 +93,7 @@ Asker.prototype = {
     log(aTopic);
     let _this = this;
     switch (aTopic) {
-      case "app-startup":
+      case "profile-after-change":
         this._startup();
         break;
       case "browser-lastwindow-close-requested":
