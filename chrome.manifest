@@ -1,5 +1,22 @@
 locale alwaysask en-US chrome/locale/en-US/
 
+# Other locales via babelzilla. Thanks to all who contributed!
+locale alwaysask de chrome/locale/de/
+locale alwaysask es-CL chrome/locale/es-CL/
+locale alwaysask es-ES chrome/locale/es-ES/
+locale alwaysask fr chrome/locale/fr/
+locale alwaysask hi-IN chrome/locale/hi-IN/
+locale alwaysask mk-MK chrome/locale/mk-MK/
+locale alwaysask pl chrome/locale/pl/
+locale alwaysask pt-BR chrome/locale/pt-BR/
+locale alwaysask sr chrome/locale/sr/
+locale alwaysask sv-SE chrome/locale/sv-SE/
+locale alwaysask te-IN chrome/locale/te-IN/
+locale alwaysask tr-TR chrome/locale/tr-TR/
+locale alwaysask uk-UA chrome/locale/uk-UA/
+locale alwaysask vi chrome/locale/vi/
+locale alwaysask zh-CN chrome/locale/zh-CN/
+
 # Component registration
 component {2b34d88e-c8e5-11de-8979-e7ad77aa63c5} components/alwaysAsk.js
 contract @zpao.com/asker;1 {2b34d88e-c8e5-11de-8979-e7ad77aa63c5}
