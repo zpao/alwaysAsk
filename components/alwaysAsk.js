@@ -58,7 +58,7 @@ const EXTRA_TOPICS = ["browser-lastwindow-close-requested",
                       "browser-lastwindow-close-granted"];
 
 // ********************** DEBUGGING *******************************************
-const DEBUG = true;
+const DEBUG = false;
 function log(aMsg) {
   aMsg = ("Asker: " + aMsg + "\n");
   if (!DEBUG) return;
