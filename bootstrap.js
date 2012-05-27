@@ -19,6 +19,8 @@
  *
  * Contributor(s):
  *   Edward Lee <edilee@mozilla.com>
+ *   Paul O’Shannessy <paul@oshannessy.com>
+ *   Others (nsBrowserGlue.js)
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,6 +39,12 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
+
+
+const TOPICS = ["quit-application-requested",
+                "quit-application-granted"];
+const EXTRA_TOPICS = ["browser-lastwindow-close-requested",
+                      "browser-lastwindow-close-granted"];
 
 /**
  * Get a localized string with string replacement arguments filled in and
@@ -148,28 +156,12 @@ getString.init = function(addon, getAlternate) {
 /**
  * Handle the add-on being activated on install/enable
  */
-function startup({id}, reason) AddonManager.getAddonByID(id, function(addon) {
-  // Initialize the strings for this add-on
-  getString.init(addon);
-
-  // Get some input/output from the current tab's window
-  let gBrowser = Services.wm.getMostRecentWindow("navigator:browser").gBrowser;
-  let {alert, confirm, prompt} = gBrowser.selectedBrowser.contentWindow;
-
-  // Ask the user for some information
-  let name = prompt(getString("askName"));
-  let money;
-  do {
-    // Get a number to pick what plural form of money to use
-    let amount = Number(prompt(getString("howMany")));
-    // Use the number to 1) insert it into the string and 2) pick the form
-    money = getString("money", amount, amount);
-  } while (!confirm(getString("confirm", money)));
-
-  // Prepare an array to insert multiple values (the name and the money string)
-  let pair = [name, money];
-  alert(getString("hereHave", pair) + "\n" + getString("hopeEnough", pair));
-})
+function startup({id}, reason) {
+  AddonManager.getAddonByID(id, function(addon) {
+    // Initialize the strings for this add-on
+    getString.init(addon);
+  });
+}
 
 /**
  * Handle the add-on being deactivated on uninstall/disable
