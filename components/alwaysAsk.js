@@ -214,8 +214,14 @@ Asker.prototype = {
     var promptService = Services.prompt;
 
     var mostRecentBrowserWindow = Services.wm.getMostRecentWindow("navigator:browser");
-    var reallyQuit = promptService.confirm(mostRecentBrowserWindow, title, message);
-
+    var {BUTTON_TITLE_CANCEL, BUTTON_TITLE_IS_STRING, BUTTON_POS_0,
+         BUTTON_POS_1, BUTTON_POS_1_DEFAULT} = promptService;
+    var flags = (BUTTON_POS_0 * BUTTON_TITLE_IS_STRING) |
+                (BUTTON_POS_1 * BUTTON_TITLE_CANCEL) |
+                BUTTON_POS_1_DEFAULT;
+    var reallyQuit = promptService.confirmEx(mostRecentBrowserWindow, title,
+                                             message, flags, title, null, null,
+                                             null, {value:false}) == 0;
     if (!reallyQuit) {
       aCancelQuit.QueryInterface(Ci.nsISupportsPRBool);
       aCancelQuit.data = true;
