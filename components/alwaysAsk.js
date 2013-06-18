@@ -144,13 +144,16 @@ Asker.prototype = {
       return;
     }
 
-    // nsBrowserGlue will never show a prompt inside private browsing mode
-    var inPrivateBrowsing = Cc["@mozilla.org/privatebrowsing;1"].
-                            getService(Ci.nsIPrivateBrowsingService).
-                            privateBrowsingEnabled;
-    if (inPrivateBrowsing) {
-      this._showPrompt(aCancelQuit, aQuitType);
-      return;
+    // Only if legacy per-application private browsing mode is supported...
+    if ("nsIPrivateBrowsingService" in Ci) {
+      // nsBrowserGlue will never show a prompt inside private browsing mode
+      var inPrivateBrowsing = Cc["@mozilla.org/privatebrowsing;1"].
+                              getService(Ci.nsIPrivateBrowsingService).
+                              privateBrowsingEnabled;
+      if (inPrivateBrowsing) {
+        this._showPrompt(aCancelQuit, aQuitType);
+        return;
+      }
     }
 
     // browser.warnOnQuit is a hidden global boolean to override all quit prompts
