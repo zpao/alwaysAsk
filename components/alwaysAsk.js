@@ -52,6 +52,16 @@ const Cu = Components.utils;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
+try {
+  Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+}
+catch (ex) {
+  this.PrivateBrowsingUtils = {
+    isJustAStub: true,
+    isWindowPrivate: function pbustub_isWindowPrivate() false
+  };
+}
+
 // Other constants for us
 const TOPICS = ["quit-application-requested",
                 "quit-application-granted"];
@@ -68,6 +78,14 @@ function log(aMsg) {
 }
 // ********************** DEBUGGING *******************************************
 
+function getBoolPref(key) {
+  try {
+    return Services.prefs.getBoolPref(key);
+  }
+  catch (ex) {
+    return false;
+  }
+}
 
 function Asker() { }
 
@@ -98,7 +116,12 @@ Asker.prototype = {
         break;
       case "browser-lastwindow-close-requested":
       case "quit-application-requested":
-        this._quitRequested(aSubject, aData);
+        try {
+          this._quitRequested(aSubject, aData);
+        }
+        catch (ex) {
+          log("Exception: " + ex);
+        }
         break;
       case "browser-lastwindow-close-granted":
       case "quit-application-granted":
@@ -125,10 +148,13 @@ Asker.prototype = {
     var windowcount = 0;
     var pagecount = 0;
     var browserEnum = Services.wm.getEnumerator("navigator:browser");
+    var someWindowsPrivate = false;
     while (browserEnum.hasMoreElements()) {
       windowcount++;
 
       var browser = browserEnum.getNext();
+      if (!someWindowsPrivate && PrivateBrowsingUtils.isWindowPrivate(browser))
+        someWindowsPrivate = true;
       var tabbrowser = browser.document.getElementById("content");
       if (tabbrowser)
         pagecount += tabbrowser.browsers.length - tabbrowser._numPinnedTabs;
@@ -144,38 +170,39 @@ Asker.prototype = {
       return;
     }
 
-    // Only if legacy per-application private browsing mode is supported...
-    if ("nsIPrivateBrowsingService" in Ci) {
-      // nsBrowserGlue will never show a prompt inside private browsing mode
-      var inPrivateBrowsing = Cc["@mozilla.org/privatebrowsing;1"].
-                              getService(Ci.nsIPrivateBrowsingService).
-                              privateBrowsingEnabled;
-      if (inPrivateBrowsing) {
-        this._showPrompt(aCancelQuit, aQuitType);
-        return;
-      }
+    if (PrivateBrowsingUtils.isJustAStub &&
+        ("nsIPrivateBrowsingService" in Ci)) {
+      // In legacy private browsing mode, all windows are private, if the mode
+      // is active, or else none is private.
+      someWindowsPrivate = Cc["@mozilla.org/privatebrowsing;1"].
+                           getService(Ci.nsIPrivateBrowsingService).
+                           privateBrowsingEnabled;
     }
 
     // browser.warnOnQuit is a hidden global boolean to override all quit prompts
     // browser.showQuitWarning specifically covers quitting
-    // browser.warnOnRestart specifically covers app-initiated restarts where we restart the app
+    // browser.warnOnRestart specifically covers app-initiated restarts where we restart the app (legacy)
     // browser.tabs.warnOnClose is the global "warn when closing multiple tabs" pref
 
     var sessionWillBeRestored = Services.prefs.getIntPref("browser.startup.page") == 3 ||
-                                Services.prefs.getBoolPref("browser.sessionstore.resume_session_once");
-    if (sessionWillBeRestored || !Services.prefs.getBoolPref("browser.warnOnQuit")) {
+                                getBoolPref("browser.sessionstore.resume_session_once");
+    if (sessionWillBeRestored || !getBoolPref("browser.warnOnQuit")) {
       this._showPrompt(aCancelQuit, aQuitType);
       return;
     }
 
-    if (aQuitType != "restart" && Services.prefs.getBoolPref("browser.showQuitWarning")) {
-      // FIREFOX PROMPTS
+    if (aQuitType != "restart" && getBoolPref("browser.showQuitWarning")) {
       log("Frefox prompts");
       return;
     }
-    else if (aQuitType == "restart" && Services.prefs.getBoolPref("browser.warnOnRestart")) {
-      // FIREFOX PROMPTS
+    else if (aQuitType == "restart" && getBoolPref("browser.warnOnRestart")) {
+      // Legacy only.
       log("Frefox prompts");
+      return;
+    }
+    else if (someWindowsPrivate) {
+      // When some windows are private, always prompt.
+      this._showPrompt(aCancelQuit, aQuitType);
       return;
     }
     else if (aQuitType == "lastwindow") {
@@ -183,8 +210,8 @@ Asker.prototype = {
       // Firefox will call into window.gBrowser.warnAboutClosingTabs(true) so we should see what that does
       var mostRecentBrowserWindow = Services.wm.getMostRecentWindow("navigator:browser");
       if (mostRecentBrowserWindow.gBrowser.tabs.length > 1 ||
-          Services.prefs("browser.tabs.warnOnClose")) {
-        // FIREFOX PROMPTS
+          getBoolPref("browser.tabs.warnOnClose")) {
+        log("Frefox prompts");
         return;
       }
     }
