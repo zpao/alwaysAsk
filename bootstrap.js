@@ -44,6 +44,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict;"
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -87,33 +88,18 @@ function getBoolPref(key) {
   }
 }
 
-function Asker() { }
+function Asker() {
+  this._startup();
+}
 
 Asker.prototype = {
-  classDescription: "Always Ask",
-  contractID: "@zpao.com/asker;1",
-  classID: Components.ID("{2b34d88e-c8e5-11de-8979-e7ad77aa63c5}"),
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
                                          Ci.nsISupportsWeakReference]),
-
-  __topics: null,
-  get _topics() {
-    if (!this.__topics) {
-      // If we're not OSX then we need TOPICS + EXTRA_TOPICS
-      this.__topics =
-        (Services.appinfo.OS == "Darwin") ? TOPICS : TOPICS.concat(EXTRA_TOPICS);
-    }
-    return this.__topics;
-  },
-
 
   observe: function(aSubject, aTopic, aData) {
     log(aTopic);
     let _this = this;
     switch (aTopic) {
-      case "profile-after-change":
-        this._startup();
-        break;
       case "browser-lastwindow-close-requested":
       case "quit-application-requested":
         try {
@@ -131,11 +117,17 @@ Asker.prototype = {
   },
 
   _startup: function() {
+    this._topics =
+      (Services.appinfo.OS == "Darwin") ? TOPICS : TOPICS.concat(EXTRA_TOPICS);
+
     // Add observers
-    let _this = this;
-    this._topics.forEach(function(aTopic) {
-      Services.obs.addObserver(_this, aTopic, true);
-    });
+    for (let t of this._topics) {
+      Services.obs.addObserver(this, t, true);
+    }
+  },
+
+  shutdown: function() {
+    this._quitGranted();
   },
 
   _quitRequested: function(aCancelQuit, aQuitType) {
@@ -260,12 +252,25 @@ Asker.prototype = {
 
   _quitGranted: function() {
     // remove observers
-    let _this = this;
-    this._topics.forEach(function(aTopic) {
-      Services.obs.removeObserver(_this, aTopic, true);
-    });
+    for (var t of this._topics) {
+      Services.obs.removeObserver(this, t, true);
+    }
+    this._topics.length = 0;
   }
+};
+
+var gAsker = null;
+
+// bootstrap.js
+
+function install() {}
+function uninstall() {}
+
+function startup() {
+  gAsker = new Asker();
 }
 
-// This only supports Gecko 2 (Firefox 4).
-const NSGetFactory = XPCOMUtils.generateNSGetFactory([Asker]);
+function shutdown() {
+  gAsker.shutdown();
+  gAsker = null;
+}

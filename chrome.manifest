@@ -16,9 +16,3 @@ locale alwaysask tr-TR chrome/locale/tr-TR/
 locale alwaysask uk-UA chrome/locale/uk-UA/
 locale alwaysask vi chrome/locale/vi/
 locale alwaysask zh-CN chrome/locale/zh-CN/
-
-# Component registration
-component {2b34d88e-c8e5-11de-8979-e7ad77aa63c5} components/alwaysAsk.js
-contract @zpao.com/asker;1 {2b34d88e-c8e5-11de-8979-e7ad77aa63c5}
-category profile-after-change Asker @zpao.com/asker;1
-
