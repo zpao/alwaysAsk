@@ -40,7 +40,7 @@
 
 version := 2.1
 xpi_dir = xpi
-xpi_files = install.rdf chrome.manifest components chrome
+xpi_files = bootstrap.js install.rdf chrome.manifest chrome
 xpi_name := alwaysAsk-$(version).xpi
 
 # makes the xpi

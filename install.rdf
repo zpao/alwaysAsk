@@ -3,6 +3,7 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>alwaysask@zpao.com</em:id>
+    <em:bootstrap>true</em:bootstrap>
     <em:name>Always Ask</em:name>
     <em:description>
       Adds an additional quit dialog that will appear when Firefox would not normally prompt (for example, when you have session restore on). This is meant to capture the accidental ⌘Q keystroke.
@@ -13,7 +14,7 @@
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
-        <em:minVersion>4.0</em:minVersion>
+        <em:minVersion>17.0</em:minVersion>
         <em:maxVersion>25.0a1</em:maxVersion>
       </Description>
     </em:targetApplication>
