@@ -7,14 +7,14 @@
     <em:description>
       Adds an additional quit dialog that will appear when Firefox would not normally prompt (for example, when you have session restore on). This is meant to capture the accidental ⌘Q keystroke.
     </em:description>
-    <em:version>2.1</em:version>
+    <em:version>2.1.2</em:version>
     <em:creator>Paul O’Shannessy</em:creator>
     <em:contributor>Nils Maier</em:contributor>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
         <em:minVersion>4.0</em:minVersion>
-        <em:maxVersion>25.0a1</em:maxVersion>
+        <em:maxVersion>45.0a1</em:maxVersion>
       </Description>
     </em:targetApplication>
   </Description>
