@@ -38,7 +38,7 @@
 #        * turn off DEBUG in alwaysAsk.js
 #        * read the version number from install.rdf
 
-version := 2.1.2
+version := 2.1.3
 xpi_dir = xpi
 xpi_files = install.rdf chrome.manifest components chrome
 xpi_name := alwaysAsk-$(version).xpi
